@@ -1,0 +1,65 @@
+# Cloudflare Pages configuration
+name = "dream-stack"
+compatibility_date = "2024-04-29"
+
+[build]
+command = "npm run build"
+publish = ".next"
+
+[build.upload]
+format = "service-worker"
+
+[env.production]
+workers_dev = true
+route = { pattern = "/*", zone_name = "your-domain.com" }
+
+# Environment variables will be set in the Cloudflare dashboard
+# [env.production.vars]
+# EXAMPLE_VAR = "production-value"
+
+# Development environment configuration
+[env.development]
+workers_dev = true
+
+# [env.development.vars]
+# EXAMPLE_VAR = "development-value"
+
+# Top-level configuration
+name = "dream-stack-workers" # Optional: A project name for grouping workers
+compatibility_date = "2024-04-05" # Specify the compatibility date
+
+# Define the workers
+[[workers]]
+name = "example-processor" # The name of the worker
+main = "workers/example-processor/index.ts" # Entry point for the worker code
+compatibility_date = "2024-04-05" # Worker-specific compatibility date
+# Add bindings here if needed, e.g.:
+# kv_namespaces = [
+#   { binding = "MY_KV_NAMESPACE", id = "your_kv_namespace_id" }
+# ]
+# r2_buckets = [
+#   { binding = "MY_BUCKET", bucket_name = "your-bucket-name" }
+# ]
+# queues.producers = [
+#   { queue = "my-queue", binding = "MY_QUEUE" }
+# ]
+# queues.consumers = [
+#   { queue = "my-queue" } # Consumed within the worker code via queue() handler
+# ]
+# durable_object_namespaces = [
+#  { binding = "MY_DURABLE_OBJECT", class_name = "MyDurableObject" }
+# ]
+# services = [
+#  { binding = "MY_SERVICE", service = "other-worker-name" }
+# ]
+
+# Example environment variables for the worker (optional)
+# [vars]
+# API_KEY = "your_api_key"
+
+# Example: Configuration for local development with wrangler dev
+# [dev]
+# ip = "127.0.0.1"
+# port = 8787
+# local_protocol = "http"
+# upstream_protocol = "https" 
