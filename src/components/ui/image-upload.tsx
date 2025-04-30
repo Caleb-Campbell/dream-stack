@@ -29,10 +29,15 @@ export function ImageUpload({ onUploadComplete, variant = "public", className = 
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
+        throw new Error(`Upload failed: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      interface UploadResponse {
+        result: {
+          id: string;
+        };
+      }
+      const data = await response.json() as UploadResponse;
       const imageUrl = getImageUrl(data.result.id);
       onUploadComplete(imageUrl);
     } catch (err) {
@@ -83,4 +88,4 @@ export function ImageUpload({ onUploadComplete, variant = "public", className = 
       )}
     </div>
   );
-} 
+}

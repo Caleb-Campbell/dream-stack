@@ -40,9 +40,10 @@ The Next.js application needs to know your Workers domain to invoke workers by n
     *   Alternatively, if you have configured a [Custom Domain for Workers](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/), use that.
 2.  **Set the Environment Variable:**
     *   Create a `.env` file in the project root (copy `.env.example` if it exists).
-    *   Add the following line, replacing `<your-workers-domain>` with the domain found above:
-        ```
-        WORKERS_DOMAIN="<your-workers-domain>"
+    *   Add the following line, replacing `<your-workers-domain>` with the domain found above.
+    *   **Important:** Use the `NEXT_PUBLIC_` prefix to make this variable available to the browser (client-side code).
+        ```env
+        NEXT_PUBLIC_WORKERS_DOMAIN="<your-workers-domain>"
         ```
     *   Make sure to add `.env` to your `.gitignore` file!
 
@@ -88,7 +89,7 @@ async function callMyWorker() {
 }
 ```
 
-**Important:** Ensure the `WORKERS_DOMAIN` environment variable is correctly set in your Next.js application's environment (e.g., via `.env` locally or environment variables in your hosting provider like Cloudflare Pages).
+**Important:** Ensure the `NEXT_PUBLIC_WORKERS_DOMAIN` environment variable is correctly set in your Next.js application's environment (e.g., via `.env` locally or environment variables in your hosting provider like Cloudflare Pages). The `NEXT_PUBLIC_` prefix is crucial for client-side invocation.
 
 ## 7. Local Development (`wrangler dev`)
 

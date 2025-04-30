@@ -2,6 +2,9 @@
   "name": "dream-stack",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "type": "module",
   "scripts": {
     "build": "next build",

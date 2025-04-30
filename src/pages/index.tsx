@@ -6,13 +6,50 @@ import Image from "next/image";
 
 import { api } from "~/utils/api";
 import { ImageUpload } from "~/components/ui/image-upload";
+import { invokeWorker } from "~/lib/cloudflare/workers";
+
+// Define the expected response structure from the example worker
+interface ExampleWorkerResponse {
+  message: string;
+  receivedAt: string;
+  processedAt: string; // Added by the worker
+}
 
 export default function Home() {
   const hello = api.post.hello.useQuery({ text: "from tRPC" });
   const [uploadedImages, setUploadedImages] = useState<{ url: string; variant: string }[]>([]);
+  const [workerResult, setWorkerResult] = useState<ExampleWorkerResponse | null>(null);
+  const [workerLoading, setWorkerLoading] = useState(false);
+  const [workerError, setWorkerError] = useState<string | null>(null);
 
   const handleImageUpload = (imageUrl: string, variant: string) => {
     setUploadedImages((prev) => [...prev, { url: imageUrl, variant }]);
+  };
+
+  // Function to call the example worker
+  const handleInvokeWorker = async () => {
+    setWorkerLoading(true);
+    setWorkerResult(null);
+    setWorkerError(null);
+
+    try {
+      const response = await invokeWorker<ExampleWorkerResponse>({
+        worker: "example-processor", // Name matches wrangler.toml
+        method: "POST",
+        body: {
+          message: "Hello from the Next.js app!",
+          receivedAt: new Date().toISOString(),
+        },
+      });
+      setWorkerResult(response);
+    } catch (error) {
+      console.error("Worker invocation failed:", error);
+      setWorkerError(
+        error instanceof Error ? error.message : "An unknown error occurred",
+      );
+    } finally {
+      setWorkerLoading(false);
+    }
   };
 
   return (
@@ -84,6 +121,29 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Worker Demo Section */}
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-white/10 p-8">
+            <h2 className="text-2xl font-bold text-white">Worker Demo</h2>
+            <button
+              onClick={handleInvokeWorker}
+              disabled={workerLoading}
+              className="rounded-full bg-pink-600/80 px-6 py-3 font-semibold text-white no-underline transition hover:bg-pink-500/80 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {workerLoading ? "Invoking Worker..." : "Invoke Example Worker"}
+            </button>
+            {workerError && (
+              <p className="text-red-400">Error: {workerError}</p>
+            )}
+            {workerResult && (
+              <div className="mt-4 rounded bg-black/20 p-4 text-white">
+                <h3 className="text-lg font-semibold">Worker Response:</h3>
+                <pre className="overflow-x-auto text-sm">
+                  {JSON.stringify(workerResult, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">

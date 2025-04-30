@@ -15,13 +15,11 @@ const getServerConfig = () => {
 };
 
 export interface CloudflareImageUploadResponse {
-  result: {
-    id: string;
-    filename: string;
-    uploaded: string;
-    requireSignedURLs: boolean;
-    variants: string[];
-  };
+  id: string;
+  filename: string;
+  uploaded: string;
+  requireSignedURLs: boolean;
+  variants: string[];
   success: boolean;
   errors: string[];
   messages: string[];
@@ -59,8 +57,8 @@ export async function uploadImage(file: Blob, filename: string): Promise<Cloudfl
     throw new Error("Failed to upload image to Cloudflare Images");
   }
 
-  const data = await response.json();
-  return data.result;
+  const data = await response.json() as CloudflareImageUploadResponse;
+  return data;
 }
 
 // This function is safe to call from the client
@@ -109,4 +107,4 @@ export const IMAGE_VARIANTS = {
       width: 1200,
     },
   },
-} as const; 
+} as const;

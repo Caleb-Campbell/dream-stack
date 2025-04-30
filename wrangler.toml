@@ -1,34 +1,8 @@
-# Cloudflare Pages configuration
-name = "dream-stack"
-compatibility_date = "2024-04-29"
+# wrangler.toml (For Cloudflare Workers Deployment)
 
-[build]
-command = "npm run build"
-publish = ".next"
+# Defines the workers to be deployed via `wrangler deploy`
 
-[build.upload]
-format = "service-worker"
-
-[env.production]
-workers_dev = true
-route = { pattern = "/*", zone_name = "your-domain.com" }
-
-# Environment variables will be set in the Cloudflare dashboard
-# [env.production.vars]
-# EXAMPLE_VAR = "production-value"
-
-# Development environment configuration
-[env.development]
-workers_dev = true
-
-# [env.development.vars]
-# EXAMPLE_VAR = "development-value"
-
-# Top-level configuration
-name = "dream-stack-workers" # Optional: A project name for grouping workers
-compatibility_date = "2024-04-05" # Specify the compatibility date
-
-# Define the workers
+# Worker: example-processor
 [[workers]]
 name = "example-processor" # The name of the worker
 main = "workers/example-processor/index.ts" # Entry point for the worker code
@@ -53,11 +27,17 @@ compatibility_date = "2024-04-05" # Worker-specific compatibility date
 #  { binding = "MY_SERVICE", service = "other-worker-name" }
 # ]
 
-# Example environment variables for the worker (optional)
-# [vars]
-# API_KEY = "your_api_key"
+# Add definitions for other workers below using the [[workers]] table format
+# [[workers]]
+# name = "another-worker"
+# main = "workers/another-worker/index.ts"
+# compatibility_date = "2024-04-05"
 
-# Example: Configuration for local development with wrangler dev
+# Note: Top-level 'name' and 'compatibility_date' were removed to avoid conflicts
+# with Cloudflare Pages builds interpreting this file.
+# Worker-specific configuration should be within each [[workers]] block.
+
+# Configuration for local development using `wrangler dev` can still be added globally if needed
 # [dev]
 # ip = "127.0.0.1"
 # port = 8787

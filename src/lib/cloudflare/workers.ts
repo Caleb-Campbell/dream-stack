@@ -84,11 +84,11 @@ export async function invokeWorker<T = unknown>(
     workerUrl = worker;
   } else {
     // Placeholder for constructing URL from worker name and domain
-    // Replace with your actual logic, e.g., using environment variables
-    const workersDomain = process.env.WORKERS_DOMAIN; // Example environment variable
+    // Use NEXT_PUBLIC_ prefix for browser access
+    const workersDomain = process.env.NEXT_PUBLIC_WORKERS_DOMAIN;
     if (!workersDomain) {
       throw new Error(
-        'WORKERS_DOMAIN environment variable is not set. Cannot resolve worker name.',
+        'NEXT_PUBLIC_WORKERS_DOMAIN environment variable is not set. Cannot resolve worker name.',
       );
     }
     // Construct the URL, adjust as needed for your naming convention
@@ -116,6 +116,10 @@ export async function invokeWorker<T = unknown>(
   }
 
   try {
+    console.log("[invokeWorker] Attempting fetch for worker:", worker);
+    console.log("[invokeWorker] Using URL:", workerUrl);
+    console.log("[invokeWorker] Resolved WORKERS_DOMAIN:", process.env.NEXT_PUBLIC_WORKERS_DOMAIN);
+
     const response = await fetch(workerUrl, requestOptions);
 
     if (!response.ok) {

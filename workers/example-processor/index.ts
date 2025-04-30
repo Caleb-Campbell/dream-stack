@@ -30,45 +30,84 @@ export default {
     env: Env,
     ctx: ExecutionContext
   ): Promise<Response> {
-    // Check if the request method is POST
-    if (request.method !== 'POST') {
-      return new Response('Expected POST request', { status: 405 });
-    }
 
-    // Check if the content type is JSON
-    const contentType = request.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return new Response('Expected Content-Type: application/json', {
-        status: 415,
+    // Define CORS headers - allow all origins for simplicity
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type', // Allow standard headers
+    };
+
+    // Handle CORS preflight (OPTIONS) request
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204, // No Content
+        headers: corsHeaders,
       });
     }
 
-    try {
-      // Parse the JSON body
-      const data: unknown = await request.json();
-
-      // Basic validation: ensure data is an object
-      if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-          return new Response('Expected a JSON object payload', { status: 400 });
+    // Handle actual POST request
+    if (request.method === 'POST') {
+      // Check content type
+      const contentType = request.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return new Response(JSON.stringify({ error: 'Expected Content-Type: application/json' }), {
+          status: 415,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        });
       }
 
-      // Process the data (add a timestamp)
-      const processedData = {
-        ...data,
-        processedAt: new Date().toISOString(),
-      };
+      try {
+        // Parse the JSON body
+        const data: unknown = await request.json();
 
-      // Return the processed data as JSON
-      return new Response(JSON.stringify(processedData), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
-      });
-    } catch (error) {
-      console.error('Error processing request:', error);
-      if (error instanceof SyntaxError) {
-        return new Response('Invalid JSON payload', { status: 400 });
+        // Basic validation: ensure data is an object
+        if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+           return new Response(JSON.stringify({ error: 'Expected a JSON object payload' }), {
+             status: 400,
+             headers: {
+               ...corsHeaders,
+               'Content-Type': 'application/json',
+             },
+           });
+        }
+
+        // Process the data (add a timestamp)
+        const processedData = {
+          ...data,
+          processedAt: new Date().toISOString(),
+        };
+
+        // Return the processed data as JSON
+        return new Response(JSON.stringify(processedData), {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (error) {
+        console.error('Error processing request:', error);
+        const errorMessage = error instanceof SyntaxError ? 'Invalid JSON payload' : 'Internal Server Error';
+        const errorStatus = error instanceof SyntaxError ? 400 : 500;
+        
+        return new Response(JSON.stringify({ error: errorMessage }), {
+          status: errorStatus,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        });
       }
-      return new Response('Internal Server Error', { status: 500 });
     }
+
+    // Handle other methods (GET, PUT, etc.)
+    return new Response('Method Not Allowed', {
+      status: 405,
+      headers: corsHeaders, // Include CORS headers even for error responses
+    });
   },
 }; 
