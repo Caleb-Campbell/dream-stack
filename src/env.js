@@ -7,18 +7,31 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    AUTH_DISCORD_ID: z.string(),
-    AUTH_DISCORD_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    CLOUDFLARE_IMAGES_ACCOUNT_ID: z.string(),
-    CLOUDFLARE_IMAGES_API_TOKEN: z.string(),
+    NEXTAUTH_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    NEXTAUTH_URL: z.preprocess(
+      // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
+      // Since NextAuth.js automatically uses the VERCEL_URL if present.
+      (str) => process.env.VERCEL_URL ?? str,
+      // VERCEL_URL doesnt include `https` so it cant be validated as a URL
+      process.env.VERCEL ? z.string() : z.string().url(),
+    ),
+    DISCORD_CLIENT_ID: z.string(),
+    DISCORD_CLIENT_SECRET: z.string(),
+    CLOUDFLARE_ACCOUNT_ID: z.string(),
+    CLOUDFLARE_ACCESS_KEY_ID: z.string(),
+    CLOUDFLARE_SECRET_ACCESS_KEY: z.string(),
+    R2_BUCKET_NAME: z.string(),
+    R2_PRESIGNED_URL_EXPIRY_SECONDS: z.coerce.number().positive().default(3600),
+    STRIPE_SECRET_KEY: z.string(),
+    // QUEUE_URL: z.string().url().optional(),
+    // QUEUE_AUTH_TOKEN: z.string().optional(),
   },
 
   /**
@@ -27,8 +40,9 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_CLOUDFLARE_IMAGES_ACCOUNT_ID: z.string(),
-    NEXT_PUBLIC_WORKERS_DOMAIN: z.string().min(1),
+    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+    NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: z.string().url(),
   },
 
   /**
@@ -36,15 +50,25 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
-    AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    CLOUDFLARE_IMAGES_ACCOUNT_ID: process.env.CLOUDFLARE_IMAGES_ACCOUNT_ID,
-    CLOUDFLARE_IMAGES_API_TOKEN: process.env.CLOUDFLARE_IMAGES_API_TOKEN,
-    NEXT_PUBLIC_CLOUDFLARE_IMAGES_ACCOUNT_ID: process.env.NEXT_PUBLIC_CLOUDFLARE_IMAGES_ACCOUNT_ID,
-    NEXT_PUBLIC_WORKERS_DOMAIN: process.env.NEXT_PUBLIC_WORKERS_DOMAIN,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
+    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+    CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_ACCESS_KEY_ID: process.env.CLOUDFLARE_ACCESS_KEY_ID,
+    CLOUDFLARE_SECRET_ACCESS_KEY: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+    R2_PRESIGNED_URL_EXPIRY_SECONDS:
+      process.env.R2_PRESIGNED_URL_EXPIRY_SECONDS,
+    // QUEUE_URL: process.env.QUEUE_URL,
+    // QUEUE_AUTH_TOKEN: process.env.QUEUE_AUTH_TOKEN,
+    NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL:
+      process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
